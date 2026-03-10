@@ -5,6 +5,7 @@
 #include <cstring>
 
 using namespace std;
+#define OUTPUT true
 
 long long operations = 0;
 int N;
@@ -85,6 +86,7 @@ vector <strokes> initial_sol(){
 
 int backtracking(bool draw=false){
     if (N%2 == 0){
+        if (OUTPUT) cout << "[EVEN] N=" << N << " 4 квадрата размера " << N/2 << endl;
         vector <strokes> sol;
         int side = N/2;
         sol.push_back({0, 0, side});
@@ -107,9 +109,40 @@ int backtracking(bool draw=false){
         st.pop();
         operations++;
 
+        if (draw && OUTPUT){
+            cout << "достали новое состояние из стека:";
+            cout << "\n\n";
+            cout << "\nКвадратов: " << cur.current_sol.size()<< ", Пустых: " << cur.empty_count << "\n";
+            int color = 1;
+            for (const auto& square : cur.current_sol) {
+                int x = square.x;
+                int y = square.y;
+                int size = square.w;
+                for (int i = x; i < x + size; ++i) {
+                    for (int j = y; j < y + size; ++j) {
+                        cur.board[i][j] = color;
+                    }
+                }
+                color++;
+            }
+
+            for (int i = 0; i < N; ++i) {
+                for (int j = 0; j < N; ++j) {
+                    cout << cur.board[j][i] << " ";
+                }
+                cout << endl;
+            }
+            cout << "\n\n";
+
+        }
+
+
         int x, y;
         if (!cur.find_empty(x, y)) {
             if (cur.current_sol.size() < best_sol.size()){
+                if (OUTPUT){
+                    cout << "новое лучшее решение: " << cur.current_sol.size() << " квадратов" << endl;
+                }
                 best_sol = cur.current_sol;
             }
             operations++;
@@ -117,6 +150,9 @@ int backtracking(bool draw=false){
         }
         
         if (cur.current_sol.size() >= best_sol.size()){
+            if (OUTPUT) {
+                cout << "отсекли: уже " << cur.current_sol.size() << " квадратов (рекорд: " << best_sol.size() << ")" << endl;
+            }
             operations++;
             continue;
         }
@@ -124,19 +160,30 @@ int backtracking(bool draw=false){
         int max_size = min(N-x, N-y);
         if (max_size > N - 1) max_size = N-1;
         if (cur.current_sol.size() + cur.empty_count / (max_size*max_size) >= best_sol.size() ){
+            if (OUTPUT) {
+                cout << "отсекли по оценке. Даже заполнив самым лучшим образом рекорд не улучшить" << endl;
+            }
             operations++;
             continue;
         }
         int min_size = (cur.current_sol.empty()) ? N / 2 : 0;
+        
         while (max_size > 0 && !cur.can_place(x, y, max_size)) {
             operations++;
             max_size--;
         }
         
+        if (OUTPUT && cur.current_sol.empty()) {
+            cout << "Начинаем с клетки (" << x+1 << "," << y+1 << "), пробуем размеры от " << max_size << " до " << min_size+1 << endl;
+        }
+
         for (int size = max_size; size > min_size; size--){
             operations++;   
             
             if (cur.can_place(x, y, size)){
+                if (OUTPUT) {
+                    cout << "квадрат " << size << "×" << size << " в (" << x+1 << "," << y+1 << ")" << endl;
+                }
                 config next = cur;
                 next.set_square(x, y, size);
                 next.current_sol.push_back({x, y, size});
@@ -145,6 +192,9 @@ int backtracking(bool draw=false){
             }
             if(cur.current_sol.size() == 0){
                 int side = N - size;
+                if (OUTPUT && cur.can_place(x, y, size)) {
+                    cout << "эвристика: сразу 3 квадрата (" << size << "×" << size << ", " << side << "×" << side << ", " << side << "×" << side << ")" << endl;
+                }
                 config next_next;
                 next_next.set_square(0, 0, size);
                 next_next.set_square(size, 0, side);
@@ -184,7 +234,7 @@ int backtracking(bool draw=false){
 
     }
 
-    // print_sol(best_sol);
+    print_sol(best_sol);
     return 0;
 }
 
@@ -195,8 +245,8 @@ void testing(){
     // backtracking(true);
     // N = 5;
     // backtracking(true);
-    N = 7;
-    backtracking(true);
+    // N = 7;
+    // backtracking(true);
 
     // N = 2;
     // backtracking();
@@ -204,10 +254,10 @@ void testing(){
     // operations = 0;
 
 
-    // N = 5;
-    // backtracking();
-    // cout << "\n============" << " N = " << N << ". Operations: " << operations << "  ============\n";
-    // operations = 0;
+    N = 5;
+    backtracking(true);
+    cout << "\n============" << " N = " << N << ". Operations: " << operations << "  ============\n";
+    operations = 0;
 
     
     // N = 6;
