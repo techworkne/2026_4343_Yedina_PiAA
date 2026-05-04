@@ -9,7 +9,7 @@ vector<int> prefic_func(string str){
     p.push_back(0);
     for (int i = 1; i < str.size(); i++){
         int k = p[i - 1];
-        while (k > 0 and str[i] != str[k]){
+        while (k > 0 && str[i] != str[k]){
             k = p[k - 1];
         }
         if (str[i] == str[k]){
@@ -41,12 +41,10 @@ vector<int> kmp(string p, string t){
 }
 
 int main(){
-    string p;
-    cin >> p;
-    string t;
-    cin >> t;
+    string p, t;
+    cin >> p >> t;
     vector<int> answer = kmp(p, t);
-    if (answer.size() > 1){
+    if (!answer.empty()){
 
         for (int i = 0; i < answer.size(); i++){
             cout << answer[i];

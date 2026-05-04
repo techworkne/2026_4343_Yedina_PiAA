@@ -8,7 +8,7 @@ vector<int> prefic_func(string str){
     vector<int> p(str.size(), 0);
     for (int i = 1; i < str.size(); i++){
         int k = p[i - 1];
-        while (k > 0 and str[i] != str[k]){
+        while (k > 0 && str[i] != str[k]){
             k = p[k - 1];
         }
         if (str[i] == str[k]){
@@ -23,7 +23,7 @@ vector<int> prefic_func(string str){
 int kmp_cycle(string A, string B){
     int lengthB = B.size();
     vector<int> ans;
-    
+
     vector<int> pi = prefic_func(B);
     int k = 0; // нынешнее состояния совпадения
     int n = A.size();
