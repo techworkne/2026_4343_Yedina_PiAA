@@ -23,28 +23,33 @@ vector<int> prefic_func(string str){
 int kmp_cycle(string A, string B){
     int lengthB = B.size();
     vector<int> ans;
-    string doubleA = A + A;
+    
+    vector<int> pi = prefic_func(B);
+    int k = 0; // нынешнее состояния совпадения
+    int n = A.size();
 
-    string combined = B + "#" + doubleA;
-    vector<int> pi = prefic_func(combined);
-    int firstPos = -1;
-
-    for (int i = lengthB + 1; i < combined.size(); i++)
+    for (int i = 0; i < 2*n ; i++)
     {
-        if (pi[i] == lengthB){
-            int pos = i - 2 * lengthB;
-            if (firstPos == -1) {
-                firstPos = pos;
-            }
-            break;
+        // с помощью модульнрой арифметики избегаю создания 2А. abcabc
+        // a -> i = 0 -> 0%3 = 0; 1%3=1; 2%3=2; 3%3=0; 4%3=1 ...
+        char current_char = A[i % n];
+
+        while (k > 0 && current_char != B[k]){
+            k = pi[k - 1];
+        }
+        if (current_char == B[k]){
+            k++;
+        }
+
+        if (k == n){
+            int pos = i - n + 1;
+            if (pos < n) return pos;
+            else
+                return -1;
         }
     }
 
-    if (firstPos != -1 && firstPos < A.size()) {
-        return firstPos;
-    } else {
-        return -1;
-    }
+    return -1;
 }
 
 int main(){
