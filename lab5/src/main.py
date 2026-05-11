@@ -108,7 +108,7 @@ if __name__ == "__main__":
     # for _ in range(n):
     #     patterns.append(input().strip())
     text = "NTAG"
-    patterns = ["TAG", "TA", "AG", "N"]
+    patterns = ["NT", "NG"]
 
 
     results = []

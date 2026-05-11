@@ -1,5 +1,7 @@
 class Vertex:
-    def __init__(self, alpha=5):
+    def __init__(self, id, road_char, alpha=5):
+        self.id = id
+        self.road_char = road_char
         self.next = [None] * alpha  # список переходов в боре
         self.go = [None] * alpha  # список переходов в автомате
         self.sufflink = None
@@ -12,14 +14,21 @@ def num(c):
 
 
 def build(patterns):
-    root = Vertex()
+    root = Vertex(id=0, road_char="root")
+    nodes = []
+    counter = 1
 
     for idx, p in enumerate(patterns, start=1):
         v = root
-        for i in range(len(p)):
-            if v.next[num(p[i])] is None:
-                v.next[num(p[i])] = Vertex()
-            v = v.next[num(p[i])]
+
+        for i in p:
+
+            if v.next[num(i)] is None:
+                v.next[num(i)] = Vertex(id=counter, road_char=i)
+                nodes.append(v.next[num(i)])
+                counter += 1
+
+            v = v.next[num(i)]
         v.pattern_ids.append(idx)
 
     from collections import deque
@@ -55,31 +64,57 @@ def build(patterns):
                     v.go[c] = root
                 else:
                     v.go[c] = v.sufflink.go[c]
-    return root
+    return root, nodes
 
 
-text = input().strip()
-n = int(input())
 
-patterns = []
-for _ in range(n):
-    patterns.append(input().strip())
+def print_debug_info(all_nodes):
+    print()
+    for v in all_nodes:
+        s = v.sufflink.id if v.sufflink else 0
+        d = v.dict_link.id if v.dict_link else 0
+        term = f" (шаблоны: {v.pattern_ids})" if v.pattern_ids else ""
+        print(f"узел {v.id} ['{v.road_char}']: суффисная ссылка на узел -> {s}, сжатая ссылка на узел -> {d}{term}")
+    print()
 
-results = []
-root = build(patterns)
+if __name__ == "__main__":
 
-v = root
-for i, char in enumerate(text):
-    v = v.go[num(char)]
+    text = input().strip()
+    n = int(input())
 
-    # по терминальным узлам через сжатые ссылки
-    temp = v
-    while temp != root:
-        if temp.pattern_ids:
-            for p_id in temp.pattern_ids:
-                results.append((i - len(patterns[p_id-1]) + 2, p_id))
-        temp = temp.dict_link
+    patterns = []
+    for _ in range(n):
+        patterns.append(input().strip())
 
-results.sort()
-for pos, p_id in results:
-    print(pos, p_id)
+    print(f"текст: {text}")
+    print(f"список паттернов: {patterns}\n")
+
+    results = []
+    root, nodes = build(patterns)
+
+    print("-"*40)
+    print("бор:")
+    print_debug_info(nodes)
+
+
+    print()
+    print("-"*40)
+    print("ищем шаблоны в тексте")
+    v = root
+    for i, char in enumerate(text):
+        old = v.id
+        v = v.go[num(char)]
+        print(f"[{i+1}] символ '{char}': узел {old} -> узел {v.id}")
+
+        # по терминальным узлам через сжатые ссылки
+        temp = v
+        while temp != root:
+            if temp.pattern_ids:
+                for p_id in temp.pattern_ids:
+                    results.append((i - len(patterns[p_id-1]) + 2, p_id))
+                    print(f"найдено совпадение шаблона '{patterns[p_id-1]}' (id={p_id}) в позиции {i - len(patterns[p_id-1]) + 2}")
+            temp = temp.dict_link
+
+    results.sort()
+    for pos, p_id in results:
+        print(pos, p_id)
